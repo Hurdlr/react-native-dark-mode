@@ -33,6 +33,8 @@ public class DarkModeModule extends ReactContextBaseJavaModule implements Lifecy
 		}
 	}
 
+	private Receiver receiver;
+
 	public DarkModeModule(final ReactApplicationContext reactContext) {
 		super(reactContext);
 		this.reactContext = reactContext;
@@ -42,7 +44,8 @@ public class DarkModeModule extends ReactContextBaseJavaModule implements Lifecy
 
 		reactContext.addLifecycleEventListener(this);
 
-		reactContext.registerReceiver(new Receiver(this), new IntentFilter("android.intent.action.CONFIGURATION_CHANGED"));
+		receiver = new Receiver(this);
+		reactContext.registerReceiver(receiver, new IntentFilter("android.intent.action.CONFIGURATION_CHANGED"));
 	}
 
 	private void notifyForChange() {
@@ -58,6 +61,14 @@ public class DarkModeModule extends ReactContextBaseJavaModule implements Lifecy
 					.emit("currentModeChanged", mode);
 		}
 	}
+
+	@Override
+	public void onCatalystInstanceDestroy() {
+		if (receiver != null) {
+			reactContext.unregisterReceiver(receiver);
+		}
+	}
+
 
 	@Override
 	public String getName() {
